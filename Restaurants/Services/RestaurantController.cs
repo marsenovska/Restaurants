@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 using System.Web.Services;
+using Microsoft.Owin;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Restaurants.Data;
@@ -23,19 +24,22 @@ namespace Restaurants.Controllers
         }
 
         [HttpGet]
-        public Restaurant[] Get()
+        public HttpResponseMessage Get()
         {
-            return _restaurantsRepository.GetRestaurants().ToArray();
+            var restaurants = _restaurantsRepository.GetRestaurants().ToArray();
+            return restaurants.Length != 0 ? Request.CreateResponse(HttpStatusCode.Created, restaurants) : Request.CreateResponse(HttpStatusCode.BadRequest);
 
         }
 
         [HttpPost]
-        public Restaurant[] Post([FromBody] object searchField)
+        public HttpResponseMessage Post([FromBody] object restaurantJson)
         {
-            dynamic restaurant = JsonConvert.DeserializeObject(searchField.ToString());
-            
-            return _restaurantsRepository.GetRestaurantByName(restaurant.name.ToString(), restaurant.category.ToString());
+            var restaurant = JsonConvert.DeserializeObject<Dictionary<string, string>>(restaurantJson.ToString());
+            var name = restaurant["name"];
+            var category = restaurant["category"];
+            var restaurants = _restaurantsRepository.GetRestaurantByName(name, category);
+            return restaurants != null ? Request.CreateResponse(HttpStatusCode.Created, restaurants) : Request.CreateResponse(HttpStatusCode.BadRequest);
         }
-       
+
     }
 }

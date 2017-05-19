@@ -8,7 +8,8 @@
 });
 
 $(function () {
-    $("#searchBtn").click(function () {
+    $("#searchBtn").click(
+        function () {
         var jsonData = JSON.stringify({ name: $("#searchField").val(), category: $("#category").val() });
         $.ajax({
             type: "POST",
@@ -33,3 +34,10 @@ $(function () {
     });
 });
 
+$("#searchField").keypress(function (event) {
+    if (event.keyCode === 13) {
+        event.preventDefault();
+        $("#searchBtn").click();
+        return false;
+    }
+});
